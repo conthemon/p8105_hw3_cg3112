@@ -9,6 +9,7 @@ library(tidyverse)
 library(dplyr)
 devtools::install_github("p8105/p8105.datasets")
 
+getwd()
 ```
 
 
@@ -114,4 +115,46 @@ brfss %>%
   
   
 ```
+
+Question 3
+```{r}
+accel <- read_csv("./accel_data.csv") %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "activity",
+    values_to = "activity_counts"
+  ) %>%
+    mutate(day = as_factor(day))  %>%
+    mutate(day = factor(day,
+      levels(day)[c(2,6,7,5,1,3,4)])) %>%
+    mutate(end_1 = ifelse(day == ("Sunday") | day == ("Saturday"), 1,  0)) 
+                    
+ 
+levels(accel$day)
+     
+table(accel$day)
+names(accel)
+str(accel)
+
+```
+At this point we have 6 different variables
+`r names(accel) `
+There doesn't seem to be a reason to change the variable types (besides day) in the data frame:
+week, day_id, activity_counts, and end_1 are all numeric while activity is character, and day is a factor.
+There are `r nrow(accel)` observations. 
+
+Part 2
+```{r}
+accel_day <- accel %>%
+  group_by(day) %>%
+  summarize(active = mean(activity_counts))
+```
+
+Plotting a 24-hr window
+```{r}
+accel_day %>%
+  
+```
+
 
