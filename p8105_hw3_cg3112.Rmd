@@ -5,9 +5,55 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(p8105.datasets)
-data("instacart")
+library(tidyverse)
+
+devtools::install_github("p8105/p8105.datasets")
+
 ```
 
 
 Problem 1 Descibing the data set
+```{r}
+library(p8105.datasets)
+data("instacart")
+aisles <- instacart %>%
+  select(aisle_id) %>%
+  unique() %>%
+  nrow() 
+
+skimr::skim(instacart)
+
+pop_aisle <- instacart %>%
+ group_by(aisle_id) %>%
+  summarize(
+    items = n()
+   )
+
+most <- pop_aisle %>%
+  filter(items == max(items))
+
+
+```
+This data set has `r nrow(instacart)` rows with 13 different variable names. There are 0 missing data. We can see from the skimr that the peak order hours are normally distributed around the middle of the day, and most orders occur on the beginning and end of the week.
+There are `r aisles` individual isles.
+The aisle with the most products is aisle 83 with 150609 different items.
+
+```{r}
+aisless <- instacart %>%
+  group_by(aisle_id) %>%
+  summarize(
+    items = n()
+  ) %>%
+  filter(items > 10000) %>%
+  ggplot(aes(x = aisle_id, y = items)) +
+      geom_point() +
+       theme(legend.position = "bottom")
+  
+  
+ # summarize(prod_count = count("product_name")) %>%
+  #filter(prod_count > 10000) %>%
+  #ggplot(aes( x = aisle, y = product_name)) +
+   #        geom_point() +
+    #       theme(legend.position = "bottom")
+```
+
