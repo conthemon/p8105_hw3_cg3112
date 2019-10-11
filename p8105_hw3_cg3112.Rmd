@@ -6,7 +6,7 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-
+library(dplyr)
 devtools::install_github("p8105/p8105.datasets")
 
 ```
@@ -40,14 +40,16 @@ The aisle with the most products is aisle 83 with 150609 different items.
 
 ```{r}
 aisless <- instacart %>%
-  group_by(aisle_id) %>%
+  group_by(aisle) %>%
   summarize(
     items = n()
   ) %>%
   filter(items > 10000) %>%
-  ggplot(aes(x = aisle_id, y = items)) +
-      geom_point() +
-       theme(legend.position = "bottom")
+  ggplot(aes(x = aisle, y = items)) +
+      geom_point() + 
+       ylim(0,140000) +
+       theme(axis.text.x = element_text(size = 7, angle = 45, hjust = 1))
+  
   
   
  # summarize(prod_count = count("product_name")) %>%
@@ -55,5 +57,61 @@ aisless <- instacart %>%
   #ggplot(aes( x = aisle, y = product_name)) +
    #        geom_point() +
     #       theme(legend.position = "bottom")
+```
+
+
+##Question 2
+
+Part 1
+```{r}
+data("brfss_smart2010")
+brfss <- brfss_smart2010 %>%
+   janitor::clean_names() %>%
+   filter(topic == "Overall Health") %>%
+   mutate(response = as.factor(response)) %>%
+   mutate(response = factor(response,
+     levels(response)[c(4,2,3,5,1)]))
+
+states_2002 <- brfss %>%
+  filter(year == 2002) %>%
+  group_by(locationabbr) %>%
+  distinct(locationdesc) %>%
+  summarize(n = n()) %>%
+  filter(n >= 7)
+
+states_2010 <- brfss %>%
+  filter(year == 2010) %>%
+  group_by(locationabbr) %>%
+  distinct(locationdesc) %>%
+  summarize(n = n()) %>%
+  filter(n >= 7)
+  
+```
+These states listed below have more than seven locations in 2002:
+`r states_2002$locationabbr`
+and in 2010 these states had more than seven locations:
+`r states_2010$locationabbr`
+
+Part 2
+```{r}
+brfss %>%
+  filter(response == "Excellent") %>%
+  group_by(year, locationabbr) %>%
+  summarize(dat = mean(data_value)) %>%
+  ggplot(aes(x = year, y = dat, color = locationabbr)) +
+     geom_line()
+```
+
+A two panel plot
+```{r}
+brfss %>%
+  filter(year == c(2006,2010)) %>%
+  filter(locationabbr == "NY") %>%
+  ggplot(aes(x = response, y = data_value)) +
+  geom_violin(aes(fill = response), color = "blue", alpha = .5) +
+  stat_summary(fun.y = median, geom = "point", color = "blue", size = 4) +
+  facet_grid(. ~ year)
+  
+  
 ```
 
