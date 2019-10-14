@@ -65,10 +65,14 @@ Finding the most popular items in specified aisles
 pop_item <- instacart %>%
   select(product_name, aisle) %>%
   filter(aisle == c("baking ingredients", "dog food care", "packaged vegetables fruits" )) %>%
-  mutate(product_name = as_factor(product_name)) %>%
+  #mutate(product_name = as_factor(product_name)) %>%
   group_by(aisle, product_name) %>%
-  summarize(prods = n(),
-            tots = max(prods))
+  summarize(prods = n()) %>%
+  pivot_wider(
+    names_from = aisle,
+    values_from = prods
+  ) %>%
+  summarize(maxes = max(product_name))
  #STILL NEED MAX VALUES
 
 ```
@@ -80,9 +84,9 @@ days = c("Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Fr
 means <- instacart %>%
   select(product_name, order_hour_of_day, order_dow) %>%
   filter(product_name == c("Pink Lady Apples", "Coffee Ice Cream")) %>%
-  mutate(
-    order_dow = replace(order_dow, order_dow == days )
-  ) %>%
+ # mutate(
+  #  order_dow = replace(order_dow, order_dow == days )
+ # ) %>%
   group_by(order_dow, product_name) %>%
   summarize(
     hour_peak = mean(order_hour_of_day)) %>%
@@ -162,7 +166,8 @@ accel <- read_csv("./accel_data.csv") %>%
   pivot_longer(
     activity_1:activity_1440,
     names_to = "activity",
-    values_to = "activity_counts"
+    values_to = "activity_counts",
+    names_prefix = "activity_"
   ) %>%
     mutate(day = as_factor(day))  %>%
     mutate(day = factor(day,
@@ -191,15 +196,56 @@ accel_day <- accel %>%
   summarize(active = mean(activity_counts))
 ```
 There seems to be a trend towards low activity on Mondays, and the weekdays in general, while the most activity occurs on the weekends including Friday. 
+We can plot this to see a better trend.
+
+```{r}
+accel_day %>%
+  ggplot(aes(x = day, y = active)) + 
+  geom_point()
+```
+From this, we can see that Monday and Sunday have the most variability, while there is a general trend increase in activity thoughout the week.
 
 
 Plotting a 24-hr window
 ```{r}
 plots <- accel %>%
-  group_by(day) %>%
- # mutate(activity = replace(activity, activity == "activity_", ""))
-   ggplot(aes(x = activity, y = activity_counts)) +
-  geom_point()
+  select(day_id, day, activity_counts, activity) %>%
+  group_by(day, day_id) %>%
+  mutate(
+    activity = as.double(activity),
+  hour1 = ifelse(activity == 1:60, 1, 0),
+  hour2 = ifelse(activity == 61:120, 1, 0),
+  hour3 = ifelse(activity == 121:180, 1, 0),
+  hour4 = ifelse(activity == 181:240, 1, 0),
+  hour5 = ifelse(activity == 241:300, 1, 0),
+  hour6 = ifelse(activity == 301:360, 1, 0),
+  hour7 = ifelse(activity == 361:420, 1, 0),
+  hour8 = ifelse(activity == 421:480, 1, 0),
+  hour9 = ifelse(activity == 481:540, 1, 0),
+  hour10 = ifelse(activity == 541:600, 1, 0),
+  hour11 = ifelse(activity == 601:660, 1, 0),
+  hour12 = ifelse(activity == 661:720, 1, 0),
+  hour13 = ifelse(activity == 721:780, 1, 0),
+  hour14 = ifelse(activity == 781:840, 1, 0),
+  hour15 = ifelse(activity == 841:900, 1, 0),
+  hour16 = ifelse(activity == 901:960, 1, 0),
+  hour17 = ifelse(activity == 961:1020, 1, 0),
+  hour18 = ifelse(activity == 1021:1080, 1, 0),
+  hour19 = ifelse(activity == 1081:1140, 1, 0),
+  hour20 = ifelse(activity == 1141:1200, 1, 0),
+  hour21 = ifelse(activity == 1201:1260, 1, 0),
+  hour22 = ifelse(activity == 1321:1380, 1, 0),
+  hour23 = ifelse(activity == 1381:1440, 1, 0),
+  hour24 = ifelse(activity == 1441:1500, 1, 0)
+  ) %>%
+  pivot_longer(
+    hour1:hour24,
+    names_to = "hour",
+    values_to = "activitys"
+  ) %>%
+  group_by(hour)
+  # ggplot(aes(x = , y = activity_counts)) +
+  #geom_point()
 
   
 ```
