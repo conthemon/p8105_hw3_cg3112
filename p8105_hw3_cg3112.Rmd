@@ -84,9 +84,6 @@ days = c("Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Fr
 means <- instacart %>%
   select(product_name, order_hour_of_day, order_dow) %>%
   filter(product_name == c("Pink Lady Apples", "Coffee Ice Cream")) %>%
- # mutate(
-  #  order_dow = replace(order_dow, order_dow == days )
- # ) %>%
   group_by(order_dow, product_name) %>%
   summarize(
     hour_peak = mean(order_hour_of_day)) %>%
@@ -95,10 +92,6 @@ means <- instacart %>%
     values_from = hour_peak
   ) 
 
-  
-  
-##NEED TO REPLACE DAYS    
-  
 ```
 
 
@@ -174,12 +167,6 @@ accel <- read_csv("./accel_data.csv") %>%
       levels(day)[c(2,6,7,5,1,3,4)])) %>%
     mutate(end_1 = ifelse(day == ("Sunday") | day == ("Saturday"), 1,  0)) 
                     
- 
-levels(accel$day)
-     
-table(accel$day)
-names(accel)
-str(accel)
 
 ```
 At this point we have 6 different variables
@@ -193,7 +180,7 @@ Part 2
 accel_day <- accel %>%
   select(day_id, day, activity_counts) %>%
   group_by(day, day_id) %>%
-  summarize(active = mean(activity_counts))
+  summarize(active = sum(activity_counts))
 ```
 There seems to be a trend towards low activity on Mondays, and the weekdays in general, while the most activity occurs on the weekends including Friday. 
 We can plot this to see a better trend.
@@ -208,11 +195,11 @@ From this, we can see that Monday and Sunday have the most variability, while th
 
 Plotting a 24-hr window
 ```{r}
-plots <- accel %>%
+accel %>%
   select(day_id, day, activity_counts, activity) %>%
   group_by(day, day_id) %>%
   mutate(
-    activity = as.double(activity),
+    activity = as.integer(activity),
   hour1 = ifelse(activity == 1:60, 1, 0),
   hour2 = ifelse(activity == 61:120, 1, 0),
   hour3 = ifelse(activity == 121:180, 1, 0),
@@ -238,14 +225,8 @@ plots <- accel %>%
   hour23 = ifelse(activity == 1381:1440, 1, 0),
   hour24 = ifelse(activity == 1441:1500, 1, 0)
   ) %>%
-  pivot_longer(
-    hour1:hour24,
-    names_to = "hour",
-    values_to = "activitys"
-  ) %>%
-  group_by(hour)
-  # ggplot(aes(x = , y = activity_counts)) +
-  #geom_point()
+  ggplot(aes(x = activity, y = activity_counts)) +
+  geom_line(aes(color = day), alpha = .5)
 
   
 ```
