@@ -59,6 +59,45 @@ aisless <- instacart %>%
    #        geom_point() +
     #       theme(legend.position = "bottom")
 ```
+Finding the most popular items in specified aisles
+
+```{r}
+pop_item <- instacart %>%
+  select(product_name, aisle) %>%
+  filter(aisle == c("baking ingredients", "dog food care", "packaged vegetables fruits" )) %>%
+  mutate(product_name = as_factor(product_name)) %>%
+  group_by(aisle, product_name) %>%
+  summarize(prods = n(),
+            tots = max(prods))
+ #STILL NEED MAX VALUES
+
+```
+
+Mean hour of the day 
+```{r}
+days = c("Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+
+means <- instacart %>%
+  select(product_name, order_hour_of_day, order_dow) %>%
+  filter(product_name == c("Pink Lady Apples", "Coffee Ice Cream")) %>%
+  mutate(
+    order_dow = replace(order_dow, order_dow == days )
+  ) %>%
+  group_by(order_dow, product_name) %>%
+  summarize(
+    hour_peak = mean(order_hour_of_day)) %>%
+  pivot_wider(
+    names_from = product_name,
+    values_from = hour_peak
+  ) 
+
+  
+  
+##NEED TO REPLACE DAYS    
+  
+```
+
+
 
 
 ##Question 2
@@ -147,13 +186,21 @@ There are `r nrow(accel)` observations.
 Part 2
 ```{r}
 accel_day <- accel %>%
-  group_by(day) %>%
+  select(day_id, day, activity_counts) %>%
+  group_by(day, day_id) %>%
   summarize(active = mean(activity_counts))
 ```
+There seems to be a trend towards low activity on Mondays, and the weekdays in general, while the most activity occurs on the weekends including Friday. 
+
 
 Plotting a 24-hr window
 ```{r}
-accel_day %>%
+plots <- accel %>%
+  group_by(day) %>%
+ # mutate(activity = replace(activity, activity == "activity_", ""))
+   ggplot(aes(x = activity, y = activity_counts)) +
+  geom_point()
+
   
 ```
 
